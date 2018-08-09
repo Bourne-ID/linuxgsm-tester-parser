@@ -8,10 +8,10 @@ import (
 
 const linuxGsmWebsite = "https://linuxgsm.com/servers/"
 
-func processLinuxGSM() []GameServerDetailModel {
+func processLinuxGSM() *[]GameServerDetailModel {
 	res := getWebsite(linuxGsmWebsite)
 	servers := getServerList(res)
-	return servers
+	return &servers
 }
 
 func getWebsite(url string) *http.Response {
