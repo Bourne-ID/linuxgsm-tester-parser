@@ -22,6 +22,13 @@ const (
 	Bit64 Architecture = "64"
 )
 
+var ArchitectureLookup = map[string]Architecture{
+	"x86": Bit32,
+	"32-bit": Bit32,
+	"x64": Bit64,
+	"64-bit": Bit64,
+}
+
 type GameServerDetailModel struct {
 	Name	string
 	Url		string
@@ -35,7 +42,7 @@ func (gs GameServerDetailModel) serverShortName() string {
 
 type GameServerDependenciesModel struct {
 	OperatingSystem OS
-	Architecture *Architecture
+	Architecture Architecture
 	Addi386		bool
 	Packages[]	string
 }
