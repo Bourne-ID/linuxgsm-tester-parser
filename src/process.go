@@ -4,12 +4,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"log"
 	"strings"
-	"fmt"
-	"os"
 )
 
-func processGameServers(servers *[]GameServerDetailModel) []GameServersModel {
-	var gameServerDetails []GameServersModel
+func processGameServers(servers *[]GameServerDetailModel) []*GameServersModel {
+	var gameServerDetails []*GameServersModel
 
 	for _,server := range *servers {
 		res := getWebsite(server.Url)
@@ -18,10 +16,10 @@ func processGameServers(servers *[]GameServerDetailModel) []GameServersModel {
 			log.Fatal(err)
 		}
 		processServerMinimumVersion(&server, doc)
-		processServerDependencies(&server, doc)
+		serverDetails := processServerDependencies(&server, doc)
 		res.Body.Close()
+		gameServerDetails = append(gameServerDetails, serverDetails)
 	}
-
 	return gameServerDetails
 }
 
@@ -46,8 +44,10 @@ func processServerMinimumVersion(server *GameServerDetailModel, doc *goquery.Doc
 	server.MinimumOperatingSystems = &minimumVersions
 }
 
-func processServerDependencies(server *GameServerDetailModel, doc *goquery.Document) GameServersModel {
-
+func processServerDependencies(server *GameServerDetailModel, doc *goquery.Document) *GameServersModel {
+	gsm := GameServersModel{
+		GameServer:server,
+	}
 	doc.Find("h2:contains(' Dependencies')").Parent().Find("#myTabContent").Children().Each(func(i int, selection *goquery.Selection) {
 		//get first element available, usually 64 bit
 		osText := strings.Split(selection.Children().Eq(0).Text(), " ")
@@ -66,8 +66,9 @@ func processServerDependencies(server *GameServerDetailModel, doc *goquery.Docum
 			Addi386:isI386Required,
 			Packages:dependencyList,
 		}
+		gsm.Dependencies = &gsdm
 	})
-	return GameServersModel{} //todo
+	return &gsm
 }
 func isAddI386Present(s string) bool {
 	return strings.Contains(s, "--add-architecture i386")
