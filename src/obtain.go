@@ -16,9 +16,7 @@ func processLinuxGSM() *[]GameServerDetailModel {
 
 func getWebsite(url string) *http.Response {
 	res, err := http.Get(url)
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
 
 
 	if res.StatusCode != 200 {
@@ -34,12 +32,9 @@ func getServerList(res *http.Response) []GameServerDetailModel {
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
 
 	doc.Find("#menu1").Children().Each(func(i int, s *goquery.Selection) {
-		//fmt.Println(s.Html())
 		value, exists := s.Attr("value")
 		if exists && len(value) > 0 {
 			name := s.Text()

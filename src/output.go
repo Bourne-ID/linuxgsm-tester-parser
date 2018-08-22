@@ -1,32 +1,35 @@
 package main
 
-import "strings"
+import (
+	"strings"
+	"io/ioutil"
+)
 
-//two different types of output:
-// 1. to file for local use
-// 2. compare to github for automatic branch and pull requesting
-
-//output:
-/*
----
-- name: shortname
--
- */
-func ProcessGSMToFile(servers []*GameServersModel) {
+func ProcessGSMToFile(servers []GameServersModel) {
 	for _, v := range servers {
 		serverShortName := v.GameServer.serverShortName()
-		//I have the OS and Arch, but no version. Therefore for each run through all the versions. We can mark success failure exectations later.
 
+		avf := AnsibleVariableFile{
+			ServerName: serverShortName,
+		}
+		for _, dep := range v.Dependencies {
 
-		for _, vv := range DockerOSLookup[v.Dependencies.OperatingSystem] {
-			avf := AnsibleVariableFile{
-				OperatingSystem:v.Dependencies.OperatingSystem,
-				Packages:strings.Join(v.Dependencies.Packages, " "),
-				Architecture:v.Dependencies.Architecture,
-				IsI386:v.Dependencies.Addi386,
-				Container:vv,
+			avf.OperatingSystem = dep.OperatingSystem
+			avf.Packages = strings.Join(dep.Packages, " ")
+			avf.Architecture = dep.Architecture
+			avf.IsI386 = dep.Addi386
+
+			for _, vv := range DockerOSLookup[dep.OperatingSystem] {
+				avf.Container = vv
+
+				makeFile(avf)
+
 			}
 		}
-
 	}
+}
+func makeFile(file AnsibleVariableFile) {
+	data := file.convertToBytes()
+	err := ioutil.WriteFile("out/"+file.generateFileName(), data, 0644)
+	check(err)
 }

@@ -3,6 +3,8 @@ package main
 import (
 	"strings"
 	"fmt"
+	"html/template"
+	"bytes"
 )
 
 type OS string
@@ -79,22 +81,36 @@ type GameServerMinimumVersion struct {
 }
 
 type GameServersModel struct {
-	GameServer			*GameServerDetailModel
-	Dependencies		*GameServerDependenciesModel
+	GameServer			GameServerDetailModel
+	Dependencies		[]GameServerDependenciesModel
 }
 
 type AnsibleVariableFile struct {
 	//for the filename and content - afterall we need to ensure we know the docker image we're using.
-	//Name				string
-	Container			DockerImage
-	OperatingSystem		OS
-	Architecture		Architecture
+	ServerName				string
+	Container				DockerImage
+	OperatingSystem			OS
+	Architecture			Architecture
+	OperatingSystemVersion	string
 	//for the contents of the file
-	Packages			string
-	IsI386				bool
+	Packages				string
+	IsI386					bool
 }
 
 
 func (value AnsibleVariableFile) generateFileName() string {
-	return fmt.Sprintf("%s-%s-%s.yml", value.Name, value.OperatingSystem, value.Architecture)
+	s := string(value.Container)
+	s = strings.Replace(s,":","-",-1)
+
+	return fmt.Sprintf("%s-%s-%s.yml", value.ServerName, s, value.Architecture)
+}
+func (value AnsibleVariableFile) convertToBytes() []byte {
+	t, err := template.ParseFiles("template/ansible.yml")
+	check(err)
+
+	var tpl bytes.Buffer
+	err = t.Execute(&tpl, value)
+	check (err)
+
+	return tpl.Bytes()
 }

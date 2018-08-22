@@ -1,0 +1,4 @@
+docker_image: {{.Container}}
+install_i386: {{.IsI386}}
+packages: {{.Packages}}
+game_server_name: {{.ServerName}}
