@@ -1,9 +1,9 @@
 package main
 
 import (
-	"net/http"
-	"log"
 	"github.com/PuerkitoBio/goquery"
+	"log"
+	"net/http"
 )
 
 const linuxGsmWebsite = "https://linuxgsm.com/servers/"
@@ -17,7 +17,6 @@ func processLinuxGSM() *[]GameServerDetailModel {
 func getWebsite(url string) *http.Response {
 	res, err := http.Get(url)
 	check(err)
-
 
 	if res.StatusCode != 200 {
 		log.Fatal("Status code error: %d %s", res.StatusCode, res.Status)

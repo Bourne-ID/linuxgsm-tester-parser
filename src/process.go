@@ -2,15 +2,15 @@ package main
 
 import (
 	"github.com/PuerkitoBio/goquery"
+	"html"
 	"log"
 	"strings"
-	"html"
 )
 
 func processGameServers(servers *[]GameServerDetailModel) []GameServersModel {
 	var gameServerDetails []GameServersModel
 
-	for _,server := range *servers {
+	for _, server := range *servers {
 		res := getWebsite(server.Url)
 		doc, err := goquery.NewDocumentFromReader(res.Body)
 		check(err)
@@ -35,8 +35,8 @@ func processServerMinimumVersion(server *GameServerDetailModel, doc *goquery.Doc
 			log.Fatal("OS or Version is nil: %s", s.Text())
 		}
 		minimumVersion := GameServerMinimumVersion{
-			OperatingSystem:&os,
-			Version:version,
+			OperatingSystem: &os,
+			Version:         version,
 		}
 
 		minimumVersions = append(minimumVersions, minimumVersion)
@@ -47,11 +47,10 @@ func processServerMinimumVersion(server *GameServerDetailModel, doc *goquery.Doc
 func processServerDependencies(server *GameServerDetailModel, doc *goquery.Document) GameServersModel {
 	var gsm GameServersModel
 	gsm = GameServersModel{
-		GameServer:*server,
+		GameServer: *server,
 	}
 	doc.Find("h2:contains(' Dependencies')").Parent().Find("#myTabContent").Children().Each(func(i int, selection *goquery.Selection) {
 		//get first element available, usually 64 bit
-
 
 		gsm.Dependencies = append(gsm.Dependencies, extractInformation(selection.Children().Eq(0).Text(), selection.Children().Eq(2).Text()))
 
@@ -69,14 +68,14 @@ func extractInformation(osTextRaw string, dependencies string) GameServerDepende
 	//get dependencies
 	dependencies = html.UnescapeString(dependencies)
 	isI386Required := isAddI386Present(dependencies)
-	dependencyList := strings.Split(removeNonPackages(dependencies)," ")
+	dependencyList := strings.Split(removeNonPackages(dependencies), " ")
 	//Nuke non-packages and convert them into the object
 
 	gsdm := GameServerDependenciesModel{
-		OperatingSystem:OSLookup[os],
-		Architecture:ArchitectureLookup[arch],
-		Addi386:isI386Required,
-		Packages:dependencyList,
+		OperatingSystem: OSLookup[os],
+		Architecture:    ArchitectureLookup[arch],
+		Addi386:         isI386Required,
+		Packages:        dependencyList,
 	}
 	return gsdm
 }
@@ -91,7 +90,7 @@ func removeNonPackages(s string) string {
 		"install ", "",
 		"apt ", "",
 		"dpkg ", "",
-		"update ","",
-		"update; ","",
+		"update ", "",
+		"update; ", "",
 		"--add-architecture i386; ", "").Replace(s)
 }

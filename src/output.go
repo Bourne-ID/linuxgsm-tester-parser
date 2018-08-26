@@ -1,8 +1,8 @@
 package main
 
 import (
-	"strings"
 	"io/ioutil"
+	"strings"
 )
 
 func ProcessGSMToFile(servers []GameServersModel) {
